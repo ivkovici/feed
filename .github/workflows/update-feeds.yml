@@ -21,10 +21,10 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run feed builder (capture errors)
+      - name: Run feed builder (never stop on error)
         run: |
           echo "Running feed builder..."
-          node scripts/build-feeds.js || echo "Script failed, but continuing so we can show logs."
+          node scripts/build-feeds.js || echo "SCRIPT FAILED"
 
       - name: Show feeds.log if exists
         run: |
