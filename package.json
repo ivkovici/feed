@@ -1,0 +1,13 @@
+{
+  "name": "hunhir-feed-builder",
+  "version": "1.0.0",
+  "description": "RSS feed aggregator for GitHub Actions + GitHub Pages",
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build-feeds.js"
+  },
+  "dependencies": {
+    "fast-xml-parser": "^4.3.6",
+    "node-fetch": "^3.3.2"
+  }
+}
