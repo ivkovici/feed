@@ -2,7 +2,7 @@ import fetch from "node-fetch";
 import { XMLParser } from "fast-xml-parser";
 import fs from "fs";
 
-// TLS hibák kikapcsolása (magyar híroldalak miatt)
+// TLS hibák kikapcsolása
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 
 // --- LOGOLÓ ---
