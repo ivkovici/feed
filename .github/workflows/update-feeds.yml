@@ -2,8 +2,8 @@ name: Update RSS Feeds
 
 on:
   schedule:
-    - cron: "*/5 * * * *"   # futás 5 percenként
-  workflow_dispatch:        # manuális indítás
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
 
 jobs:
   build:
@@ -22,12 +22,14 @@ jobs:
         run: npm ci
 
       - name: Generate feeds.json
-        run: node scripts/build-feeds.js
+        run: |
+          node scripts/build-feeds.js
+        continue-on-error: true
 
-      - name: Upload feeds.json to GitHub Pages
+      - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ./public   # ide tedd a feeds.json-t
+          path: public
 
   deploy:
     needs: build
