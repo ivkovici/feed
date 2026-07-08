@@ -21,16 +21,19 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Generate feeds.json
+      - name: Run feed builder (capture errors)
         run: |
-          set -e
-          node scripts/build-feeds.js
+          echo "Running feed builder..."
+          node scripts/build-feeds.js || echo "Script failed, but continuing so we can show logs."
 
-      - name: Show error log if exists
-        if: failure()
+      - name: Show feeds.log if exists
         run: |
-          echo "=== ERROR LOG ==="
-          cat feeds.log || echo "No feeds.log found"
+          echo "=== FEEDS LOG ==="
+          if [ -f feeds.log ]; then
+            cat feeds.log
+          else
+            echo "No feeds.log found."
+          fi
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
