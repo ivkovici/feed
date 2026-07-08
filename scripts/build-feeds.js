@@ -2,20 +2,16 @@ import fetch from "node-fetch";
 import { XMLParser } from "fast-xml-parser";
 import fs from "fs";
 
-// TLS hibák kikapcsolása
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 
-// --- LOGOLÓ ---
 function logError(err) {
   fs.writeFileSync("feeds.log", String(err.stack || err));
 }
 
-// --- REGEXEK ---
 const RE_NBSP = /\u00a0/g;
 const RE_ENTITY = /&(#x?[0-9a-f]+|[a-z]+);/gi;
 const RE_SPACES = /\s+/g;
 
-// --- HTML STRIPPER ---
 function stripHtml(input) {
   let out = "";
   let inside = false;
@@ -36,7 +32,6 @@ function stripHtml(input) {
   return out;
 }
 
-// --- ENTITY MAP ---
 const ENTITY_MAP = {
   amp: "&",
   quot: '"',
@@ -52,7 +47,6 @@ const ENTITY_MAP = {
   mdash: "—",
 };
 
-// --- ENTITY DEKÓDER ---
 function entityDecoder(entity, code) {
   const normalized = code.toLowerCase();
   const mapped = ENTITY_MAP[normalized];
@@ -71,7 +65,6 @@ function entityDecoder(entity, code) {
   return entity;
 }
 
-// --- NORMALIZÁLT SZÖVEG ---
 function normalizeText(value) {
   if (value == null) return "";
   let v = String(value);
@@ -83,7 +76,6 @@ function normalizeText(value) {
   return v.trim();
 }
 
-// --- XML PARSER ---
 const parser = new XMLParser({
   ignoreAttributes: true,
   parseTagValue: false,
@@ -93,7 +85,6 @@ const parser = new XMLParser({
   ignorePiTags: true,
 });
 
-// --- RSS FORRÁSOK ---
 const SOURCES = [
   { name: "Telex", slug: "telex", feedUrl: "https://telex.hu/rss" },
   { name: "444.hu", slug: "444", feedUrl: "https://444.hu/feed" },
@@ -117,7 +108,6 @@ const SOURCES = [
 
 const MAX_STORED_ITEMS = 2500;
 
-// --- KATEGÓRIA KIVONAT ---
 function extractCategories(rawItem) {
   let cats = [];
   if (rawItem.category) {
@@ -137,7 +127,6 @@ function extractCategories(rawItem) {
   return [...out];
 }
 
-// --- MAIN ---
 async function main() {
   console.log("Starting RSS aggregation...");
 
@@ -146,7 +135,6 @@ async function main() {
 
   const itemsObj = {};
 
-  // --- korábbi cache betöltése ---
   try {
     if (fs.existsSync("public/feeds.json")) {
       const cached = JSON.parse(fs.readFileSync("public/feeds.json", "utf8"));
@@ -162,7 +150,6 @@ async function main() {
 
   const newItemsFound = [];
 
-  // --- RSS fetch ---
   await Promise.all(
     SOURCES.map(async (source) => {
       try {
@@ -233,12 +220,10 @@ async function main() {
     })
   );
 
-  // --- új itemek hozzáadása ---
   for (const item of newItemsFound) {
     itemsObj[item.id] = item;
   }
 
-  // --- rendezés + limit ---
   const finalItems = Object.values(itemsObj)
     .sort((a, b) => (b.pubDateMs || 0) - (a.pubDateMs || 0))
     .slice(0, MAX_STORED_ITEMS);
@@ -250,16 +235,13 @@ async function main() {
     items: finalItems,
   };
 
-  // --- mentés ---
   fs.mkdirSync("public", { recursive: true });
   fs.writeFileSync("public/feeds.json", JSON.stringify(finalData, null, 2));
 
   console.log(`Saved ${finalItems.length} items. New items: ${newItemsFound.length}`);
 }
 
-// --- FATAL ERROR HANDLER ---
 main().catch(err => {
   console.error("FATAL ERROR:", err);
   logError(err);
-  process.exit(1);
 });
