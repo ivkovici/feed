@@ -23,11 +23,14 @@ jobs:
 
       - name: Generate feeds.json
         run: |
-          node scripts/build-feeds.js || true
-        continue-on-error: true
+          set -e
+          node scripts/build-feeds.js
 
-      - name: Show logs
-        run: cat feeds.log || true
+      - name: Show error log if exists
+        if: failure()
+        run: |
+          echo "=== ERROR LOG ==="
+          cat feeds.log || echo "No feeds.log found"
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
