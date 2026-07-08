@@ -1,7 +1,14 @@
 import fetch from "node-fetch";
-process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 import { XMLParser } from "fast-xml-parser";
 import fs from "fs";
+
+// TLS hibák kikapcsolása (magyar híroldalak miatt)
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
+
+// --- LOGOLÓ ---
+function logError(err) {
+  fs.writeFileSync("feeds.log", String(err.stack || err));
+}
 
 // --- REGEXEK ---
 const RE_NBSP = /\u00a0/g;
@@ -139,7 +146,7 @@ async function main() {
 
   const itemsObj = {};
 
-  // --- korábbi cache betöltése (ha van) ---
+  // --- korábbi cache betöltése ---
   try {
     if (fs.existsSync("public/feeds.json")) {
       const cached = JSON.parse(fs.readFileSync("public/feeds.json", "utf8"));
@@ -250,4 +257,9 @@ async function main() {
   console.log(`Saved ${finalItems.length} items. New items: ${newItemsFound.length}`);
 }
 
-main();
+// --- FATAL ERROR HANDLER ---
+main().catch(err => {
+  console.error("FATAL ERROR:", err);
+  logError(err);
+  process.exit(1);
+});
